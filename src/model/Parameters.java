@@ -1,6 +1,5 @@
 package model;
 
-import com.sun.istack.internal.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -86,7 +85,6 @@ public class Parameters {
         this.coFlowId = coFlowId;
     }
 
-    @Nullable
     public static Parameters getParameters(String[] args) {
         if (null == args || args.length == 0) {
             return null;
