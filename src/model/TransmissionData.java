@@ -1,12 +1,13 @@
 package model;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class TransmissionData {
-    int coflow_id, flow_count;
-    int flow_id, data_size;
-    String src_ip, dst_ip;
-    int src_port, dst_port;
+    public int coflow_id, flow_count;
+    public int flow_id, data_size;
+    public String src_ip, dst_ip;
+    public int src_port, dst_port;
 
     private TransmissionData(){}
     public TransmissionData(
@@ -51,6 +52,11 @@ public class TransmissionData {
                 ", dst_ip=" + dst_ip +
                 ", src_port=" + src_port +
                 ", dst_port=" + dst_port ;
+    }
+
+    @Override
+    public int hashCode() {
+        return Constant.hash(coflow_id,flow_id);
     }
 
     public static void main(String[] args) {
