@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -17,10 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public class Client {
-    private static final String DATA_PREFIX_CO_FLOW_ID = "co_flow_id=";
-    private static final String DATA_PREFIX_FLOW_COUNT = "flow_count=";
-    private static final String DATA_PREFIX_DATA_SIZE = "data_size=";
-    private static final int BUFF_SIZE = 1024;
     private static volatile AtomicInteger dataSize;
     private static boolean isReceived=false;
 
@@ -88,7 +83,7 @@ public class Client {
                     byte[] b=buf.array();
                     String s1 = new String(b);
                     System.out.println(s1);
-                    if(isReceived==false&&s1!=null){
+                    if(!isReceived &&s1!=null){
                         isReceived=true;
                         break;
                     }
@@ -123,7 +118,6 @@ public class Client {
             int i = 0;
             isReceived=false;
             try {
-                int buffSize = BUFF_SIZE;
                 int send_port=65535 - coFlowId * 100 - flowId;
                 DatagramSocket ds = new DatagramSocket(send_port); // 指定发送端口
 //                String srcIP=ds.getLocalAddress().toString();
@@ -133,8 +127,8 @@ public class Client {
                 String srcIP=srcIPtmp.substring(1,srcIPtmp.length());
 
 
-                int destPort=10000+60*coFlowId+flowId;
-                while (isReceived==false) {
+                int destPort = Constant.SERVER_PORT;
+                while (!isReceived) {
 //                    byte[] buffer = new byte[1024];//这三行代码是为了监听服务端返回的终结数据包
 //                    DatagramPacket ending_packet = new DatagramPacket(buffer, buffer.length);
 //                    ds.receive(ending_packet);
@@ -143,16 +137,16 @@ public class Client {
 //                            DATA_PREFIX_DATA_SIZE + buffSize;
                     String data= new TransmissionData(coFlowId,flowCount,flowId,dataSize.intValue(),srcIP,dstIP,send_port,destPort).toString();//里面调用了很多丑的不行的方法。。。
 
-                    byte[] buff = Arrays.copyOf(data.getBytes(), buffSize);
+                    byte[] buff = Arrays.copyOf(data.getBytes(), Constant.BUFF_SIZE);
                     DatagramPacket packet = new DatagramPacket(buff, 0, buff.length, destIp, 5001);
                     ds.send(packet);
 //                        i++;
                     System.out.println(i++);
 
-                    if(i>1000){  //这里测试一下我的停止发包的函数
-                        packet = new DatagramPacket(buff, 0, buff.length, destIp, destPort);
-                        ds.send(packet);
-                    }
+//                    if(i>1000){  //这里测试一下我的停止发包的函数
+//                        packet = new DatagramPacket(buff, 0, buff.length, destIp, destPort);
+//                        ds.send(packet);
+//                    }
 
                 }
             } catch (Exception e) {

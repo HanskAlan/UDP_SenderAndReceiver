@@ -1,10 +1,6 @@
 package model;
 
-import java.lang.reflect.Array;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class TransmissionData {
     public static final String SF = ";";// split flag
@@ -111,7 +107,7 @@ public class TransmissionData {
         System.out.println("测试getTransmissionData方法");
         System.out.println(TransmissionData.getTransmissionData(tData.toString()));
 
-        byte[] buff = Arrays.copyOf((tData.toString() + "5145613sA84BJKLAJLLK").getBytes(), Constant.BUFF_SIZE);
+        byte[] buff = Arrays.copyOf((tData.toString() + "5145613sA84A1B3C4D5E2").getBytes(), Constant.BUFF_SIZE);
         str = new String(buff);
         System.out.println(str);
         String[] tmp =  str.split(SF);
