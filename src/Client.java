@@ -1,8 +1,14 @@
 import model.Parameters;
 
+<<<<<<< HEAD
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+=======
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+>>>>>>> dev
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,6 +57,24 @@ public class Client {
     static class Listener extends Thread {
         public void run() {
             try {
+<<<<<<< HEAD
+//                DatagramSocket ds = new DatagramSocket(5002);
+                while(true) { //
+                    // 数据缓冲区:
+                    System.out.println("start listening");
+//                    byte[] buffer = new byte[1024];
+//                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+//                    ds.receive(packet); // 收取一个UDP数据包
+
+                    DatagramChannel channel = DatagramChannel.open();
+                    channel.socket().bind(new InetSocketAddress(5002));
+                    ByteBuffer buf = ByteBuffer.allocate(64);
+                    buf.clear();
+                    SocketAddress s=channel.receive(buf);
+                    System.out.println(s.toString());
+
+                    if(isReceived==false&&s!=null){
+=======
                 DatagramSocket ds = new DatagramSocket(5002);
                 while(true) { //
                     // 数据缓冲区:
@@ -59,6 +83,7 @@ public class Client {
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     ds.receive(packet); // 收取一个UDP数据包
                     if(isReceived==false){
+>>>>>>> dev
                         isReceived=true;
                         break;
                     }
@@ -107,10 +132,17 @@ public class Client {
                     ds.send(packet);
 //                        i++;
                     System.out.println(i++);
+<<<<<<< HEAD
+                    if(i>10){  //这里测试一下我的停止发包的函数
+                        packet = new DatagramPacket(buff, 0, buff.length, destIp, 5002);
+                        ds.send(packet);
+                    }
+=======
 //                    if(i>10000){  //这里测试一下我的停止发包的函数
 //                        packet = new DatagramPacket(buff, 0, buff.length, destIp, 5002);
 //                        ds.send(packet);
 //                    }
+>>>>>>> dev
                 }
             } catch (Exception e) {
                 e.printStackTrace();
