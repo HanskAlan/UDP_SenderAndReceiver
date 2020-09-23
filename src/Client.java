@@ -39,6 +39,7 @@ public class Client {
             dataSize = new AtomicInteger(parameters.getDataSize() * 1024 * 1024);
             DatagramSocket ds = new DatagramSocket(coFlowId);
             new SendWorker(ds, destIp,srcIp, coFlowId, flowId, flowCount).start();
+
             new ListenWorker(destIp,coFlowId,flowId,flowCount).start();
             System.out.println("complete sending packets");
         } catch (Exception e) {
@@ -83,7 +84,7 @@ public class Client {
                     channel.socket().bind(new InetSocketAddress(receive_port));
                     ByteBuffer buf = ByteBuffer.allocate(256);//这个地方我不确定会不会埋雷，发包的大小应该是以这个256为准的吧
                     buf.clear();
-                    SocketAddress s=channel.receive(buf);
+                    SocketAddress s =channel.receive(buf);
                     byte[] b=buf.array();
                     String s1 = new String(b);
                     System.out.println(s1);
@@ -131,6 +132,7 @@ public class Client {
                 String srcIPtmp=srcIp.toString();
                 String srcIP=srcIPtmp.substring(1,srcIPtmp.length());
 
+
                 int destPort=10000+60*coFlowId+flowId;
                 while (isReceived==false) {
 //                    byte[] buffer = new byte[1024];//这三行代码是为了监听服务端返回的终结数据包
@@ -140,6 +142,7 @@ public class Client {
 //                            DATA_PREFIX_FLOW_COUNT + flowCount + ";" +
 //                            DATA_PREFIX_DATA_SIZE + buffSize;
                     String data= new TransmissionData(coFlowId,flowCount,flowId,dataSize.intValue(),srcIP,dstIP,send_port,destPort).toString();//里面调用了很多丑的不行的方法。。。
+
                     byte[] buff = Arrays.copyOf(data.getBytes(), buffSize);
                     DatagramPacket packet = new DatagramPacket(buff, 0, buff.length, destIp, 5001);
                     ds.send(packet);
