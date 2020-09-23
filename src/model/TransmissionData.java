@@ -4,12 +4,15 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class TransmissionData {
+    public static final String SF = ";";// split flag
     public int coflow_id, flow_count;
     public int flow_id, data_size;
     public String src_ip, dst_ip;
     public int src_port, dst_port;
 
-    private TransmissionData(){}
+    public TransmissionData(){
+        this(-1,-1,-1,-1,null,null,-1,-1);
+    }
     public TransmissionData(
             int coflowId, int flowCount,
             int flowId, int dataSize,
@@ -30,28 +33,51 @@ public class TransmissionData {
 
     public static TransmissionData getTransmissionData(String string){
         TransmissionData data = new TransmissionData();
-        String[] split = string.split(", ");
-        data.coflow_id = Integer.parseInt(split[0].split("=")[1]);
-        data.flow_count = Integer.parseInt(split[1].split("=")[1]);
-        data.flow_id = Integer.parseInt(split[2].split("=")[1]);
-        data.data_size = Integer.parseInt(split[3].split("=")[1]);
-        data.src_ip = split[4].split("=")[1];
-        data.dst_ip = split[5].split("=")[1];
-        data.src_port = Integer.parseInt(split[6].split("=")[1]);
-        data.dst_port = Integer.parseInt(split[7].split("=")[1]);
+        String[] splits = string.split(SF);
+        for(String split : splits){
+            String key = split.split("=")[0];
+            String value = split.split("=")[1];
+            switch (key + "="){
+                case Constant.DATA_PREFIX_CO_FLOW_ID:
+                    data.coflow_id = Integer.parseInt(value);
+                    break;
+                case Constant.DATA_PREFIX_DATA_SIZE:
+                    data.data_size = Integer.parseInt(value);
+                    break;
+                case Constant.DATA_PREFIX_DST_IP:
+                    data.dst_ip = value;
+                    break;
+                case Constant.DATA_PREFIX_DST_PORT:
+                    data.dst_port = Integer.parseInt(value);
+                    break;
+                case Constant.DATA_PREFIX_FLOW_COUNT:
+                    data.flow_count = Integer.parseInt(value);
+                    break;
+                case Constant.DATA_PREFIX_FLOW_ID:
+                    data.flow_id = Integer.parseInt(value);
+                    break;
+                case Constant.DATA_PREFIX_SRC_IP:
+                    data.src_ip = value;
+                    break;
+                case Constant.DATA_PREFIX_SRC_PORT:
+                    data.src_port = Integer.parseInt(value);
+                    break;
+            }
+        }
+
         return data;
     }
 
     @Override
     public String toString() {
-        return "coflow_id=" + coflow_id +
-                ", flow_count=" + flow_count +
-                ", flow_id=" + flow_id +
-                ", data_size=" + data_size +
-                ", src_ip=" + src_ip +
-                ", dst_ip=" + dst_ip +
-                ", src_port=" + src_port +
-                ", dst_port=" + dst_port ;
+        return "coflow_id=" + coflow_id + SF +
+                "flow_count=" + flow_count + SF +
+                "flow_id=" + flow_id +SF +
+                "data_size=" + data_size + SF +
+                "src_ip=" + src_ip + SF +
+                "dst_ip=" + dst_ip + SF +
+                "src_port=" + src_port + SF +
+                "dst_port=" + dst_port + SF;
     }
 
     @Override
@@ -66,9 +92,12 @@ public class TransmissionData {
                 "10.0.0.1","10.0.0.1",
                 7,8
         );
+        System.out.println("原始数据生成");
         System.out.println(transmissionData);
+        System.out.println("使用Split Flag对上述字符串执行split方法");
         String str = transmissionData.toString();
-        System.out.println(Arrays.toString(str.split(", ")));
+        System.out.println(Arrays.toString(str.split(SF)));
+        System.out.println("测试getTransmissionData方法");
         System.out.println(TransmissionData.getTransmissionData(transmissionData.toString()));
     }
 }
