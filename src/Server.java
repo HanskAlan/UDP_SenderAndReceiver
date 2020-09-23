@@ -2,7 +2,6 @@ import model.Constant;
 import model.TransmissionData;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.*;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +21,7 @@ public class Server {
 
             socket = new DatagramSocket(Constant.SERVER_PORT);
 
-            // noinspection 服务器本就是一直持续的
+            // noinspection InfiniteLoopStatement 服务器本就是一直持续的,
             while(true){
                 DatagramPacket packet = new DatagramPacket(new byte[Constant.BUFF_SIZE], Constant.BUFF_SIZE);
                 try {
@@ -40,18 +39,22 @@ public class Server {
                             Arrays.copyOfRange(splits,0,Constant.NUMBER_OF_DATA_PREFIX)
                     );
 
-                    int newSum;
-                    if(!tDataMap.containsKey(tData.hashCode())){
-                        tDataMap.put(tData.hashCode(), tData);
+                    int newSum = 0,key = 65535 - tData.hashCode();
+                    // 假如不包含这个键，则记录新的tData
+                    if(!tDataMap.containsKey(key)){
+                        tDataMap.put(key, tData);
                         newSum = packet.getLength();
                     } else {
-                        newSum = receiveDataMap.get(tData.hashCode()) + packet.getLength();
+                        // 否则累加已经接受到的数据量
+                        newSum = receiveDataMap.get(key) + packet.getLength();
                     }
-                    receiveDataMap.put(tData.hashCode(),newSum);
+                    receiveDataMap.put(key,newSum);
+
+                    // 假如已经接收到的数据量超过的data_size,这发送应答信号
                     if(newSum > tData.data_size){
                         ACK(tData);
-                        tDataMap.remove(tData.hashCode());
-                        receiveDataMap.remove(tData.hashCode());
+                        tDataMap.remove(key);
+                        receiveDataMap.remove(key);
                     }
 
                 } catch (IOException e) {
@@ -76,14 +79,16 @@ public class Server {
      */
     private static void ACK(TransmissionData tData){
         try {
-            DatagramSocket socket = new DatagramSocket(tData.hashCode());
+            // 传输到Client的65535 - hash处
+            DatagramSocket socket = new DatagramSocket(65535 - tData.hashCode());
             for(int i = 0; i < Constant.ACK_NUMBER; i++){
                 try {
                     byte[] buff = Arrays.copyOf(tData.toString().getBytes(), Constant.BUFF_SIZE);
+                    // Client的接受端口是10000 + hash
                     DatagramPacket packet = new DatagramPacket(
-                        buff, 0, buff.length,
-                        InetAddress.getByName(tData.src_ip),
-                        Constant.CLIENT_PORT
+                            buff, 0, buff.length,
+                            InetAddress.getByName(tData.src_ip),
+                            10000 + tData.hashCode()
                     );
                     socket.send(packet);
                 } catch (IOException e) {

@@ -16,6 +16,6 @@ public class Constant {
     public static int SERVER_PORT = 5001;
     public static int ACK_NUMBER = 10;
     public static int hash(int coflowID,int flowId){
-        return 65535 - coflowID * 100 - flowId;
+        return coflowID * 60 + flowId;
     }
 }
