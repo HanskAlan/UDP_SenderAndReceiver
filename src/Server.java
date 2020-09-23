@@ -14,11 +14,11 @@ public class Server {
 
     public static void main(String[] args) {
         try {
-            System.out.println("Server is running and waiting for udp data");
             DatagramSocket socket;
             Map<Integer, TransmissionData> tDataMap = new HashMap<>();
             Map<Integer, Integer> receiveDataMap = new HashMap<>();
 
+            System.out.println("Server is running and listen to " + Constant.SERVER_PORT);
             socket = new DatagramSocket(Constant.SERVER_PORT);
 
             // noinspection InfiniteLoopStatement 服务器本就是一直持续的,
@@ -27,10 +27,6 @@ public class Server {
                 try {
                     // 据说此方法接收到数据报之前会一直阻塞
                     socket.receive(packet);
-
-                    SocketAddress socketAddress = packet.getSocketAddress();
-                    System.out.println("UDP包的接受IP" + socketAddress.toString());
-
                     byte[] data = packet.getData();
 
                     // 这里应该没有问题了
@@ -42,6 +38,10 @@ public class Server {
                     int newSum = 0,key = 65535 - tData.hashCode();
                     // 假如不包含这个键，则记录新的tData
                     if(!tDataMap.containsKey(key)){
+                        System.out.printf(
+                                "Flow(%d,%d) from %s:%d is established",
+                                tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port
+                        );
                         tDataMap.put(key, tData);
                         newSum = packet.getLength();
                     } else {
@@ -52,6 +52,10 @@ public class Server {
 
                     // 假如已经接收到的数据量超过的data_size,这发送应答信号
                     if(newSum > tData.data_size){
+                        System.out.printf(
+                                "Flow(%d,%d) from %s:%d is completed",
+                                tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port
+                        );
                         ACK(tData);
                         tDataMap.remove(key);
                         receiveDataMap.remove(key);
@@ -63,12 +67,13 @@ public class Server {
                     e.printStackTrace();
 
                     // 重启socket
-                    System.out.println("正在尝试重启socket");
+                    System.out.println("We are trying for reboot the socket");
                     socket.close();
                     socket = new DatagramSocket(Constant.SERVER_PORT);
                 }
             }
         } catch (SocketException e) {
+            System.out.println("Socket ");
             e.printStackTrace();
         }
     }
