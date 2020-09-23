@@ -11,6 +11,8 @@ public class Parameters {
 
     private static final String DEST_IP = "dest_ip";
 
+    private static final String SRC_IP = "src_ip";
+
     private static final String FLOW_ID = "flow_id";
 
     private static final String FLOW_COUNT = "flow_count";
@@ -24,6 +26,8 @@ public class Parameters {
      * 目的主机IP
      */
     private String destIp;
+
+    private String srcIp;
 
     /**
      * 子流Id，使用报文的目的端口进行表示
@@ -51,6 +55,14 @@ public class Parameters {
 
     public void setDestIp(String destIp) {
         this.destIp = destIp;
+    }
+
+    public String getSrcIp() {
+        return srcIp;
+    }
+
+    public void setSrcIp(String srcIp) {
+        this.srcIp = srcIp;
     }
 
     public int getFlowId() {
@@ -101,6 +113,9 @@ public class Parameters {
         }
         if (null != params.get(DEST_IP)) {
             parameters.setDestIp(params.get(DEST_IP));
+        }
+        if (null != params.get(SRC_IP)) {
+            parameters.setSrcIp(params.get(SRC_IP));
         }
         if (null != params.get(FLOW_ID)) {
             parameters.setFlowId(Integer.parseInt(params.get(FLOW_ID)));
