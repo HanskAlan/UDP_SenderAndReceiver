@@ -1,5 +1,6 @@
 import model.Parameters;
-
+import model.TransmissionData;
+import model.Constant;
 
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -36,7 +37,7 @@ public class Client {
             dataSize = new AtomicInteger(parameters.getDataSize() * 1024 * 1024);
             DatagramSocket ds = new DatagramSocket(coFlowId);
             new SendWorker(ds, destIp, coFlowId, flowId, flowCount).start();
-            new Listener().start();
+            new ListenWorker(destIp,coFlowId,flowId,flowCount).start();
             System.out.println("complete sending packets");
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,7 +51,21 @@ public class Client {
         }
     }
 
-    static class Listener extends Thread {
+    static class ListenWorker extends Thread {
+        private final int coFlowId;
+        private final int flowId;
+        private final InetAddress destIp;
+//        private final DatagramSocket ds;
+        private final int flowCount;
+//        private String data;
+
+        ListenWorker( InetAddress destIp, int coFlowId, int flowId, int flowCount) {
+            //this.ds = ds;
+            this.destIp = destIp;
+            this.coFlowId = coFlowId;
+            this.flowId = flowId;
+            this.flowCount = flowCount;
+        }
         public void run() {
             try {
 //                DatagramSocket ds = new DatagramSocket(5002);
@@ -62,17 +77,15 @@ public class Client {
 //                    ds.receive(packet); // 收取一个UDP数据包
 
                     DatagramChannel channel = DatagramChannel.open();
-                    channel.socket().bind(new InetSocketAddress(5002));
-                    ByteBuffer buf = ByteBuffer.allocate(64);
+                    int receive_port=10000+coFlowId*60+flowId;
+                    channel.socket().bind(new InetSocketAddress(receive_port));
+                    ByteBuffer buf = ByteBuffer.allocate(256);//这个地方我不确定会不会埋雷，发包的大小应该是以这个256为准的吧
                     buf.clear();
-                    SocketAddress s=channel.receive(buf);
+                    SocketAddress s =channel.receive(buf);
                     byte[] b=buf.array();
-                    System.out.println(b);
-
                     String s1 = new String(b);
-                    System.out.println(s1.length()+"gdetge");
-                    System.out.println(s1+"show to huanhuan");
-                    if(isReceived==false&&s!=null){
+                    System.out.println(s1);
+                    if(isReceived==false&&s1!=null){
                         isReceived=true;
                         break;
                     }
@@ -108,14 +121,16 @@ public class Client {
                 int buffSize = BUFF_SIZE;
                 int send_port=65535 - coFlowId * 100 - flowId;
                 DatagramSocket ds = new DatagramSocket(send_port); // 指定发送端口
-
+                String srcIP=ds.getLocalAddress().toString();
+                int destPort=10000+60*coFlowId+flowId;
                 while (isReceived==false) {
 //                    byte[] buffer = new byte[1024];//这三行代码是为了监听服务端返回的终结数据包
 //                    DatagramPacket ending_packet = new DatagramPacket(buffer, buffer.length);
 //                    ds.receive(ending_packet);
-                    String data = destIp.toString()+DATA_PREFIX_CO_FLOW_ID + coFlowId + ";" +
-                            DATA_PREFIX_FLOW_COUNT + flowCount + ";" +
-                            DATA_PREFIX_DATA_SIZE + buffSize;
+//                    String data = destIp.toString()+DATA_PREFIX_CO_FLOW_ID + coFlowId + ";" +
+//                            DATA_PREFIX_FLOW_COUNT + flowCount + ";" +
+//                            DATA_PREFIX_DATA_SIZE + buffSize;
+                    String data= new TransmissionData(coFlowId,flowCount,flowId,dataSize.intValue(),srcIP,destIp.toString(),send_port,destPort).toString();//里面调用了很多丑的不行的方法。。。
                     byte[] buff = Arrays.copyOf(data.getBytes(), buffSize);
                     DatagramPacket packet = new DatagramPacket(buff, 0, buff.length, destIp, 5001);
                     ds.send(packet);
@@ -123,7 +138,7 @@ public class Client {
                     System.out.println(i++);
 
                     if(i>1000){  //这里测试一下我的停止发包的函数
-                        packet = new DatagramPacket(buff, 0, buff.length, destIp, 5002);
+                        packet = new DatagramPacket(buff, 0, buff.length, destIp, destPort);
                         ds.send(packet);
                     }
 

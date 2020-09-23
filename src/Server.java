@@ -31,15 +31,19 @@ public class Server {
 
                     // 这里应该没有问题了
                     String[] splits = new String(data).split(TransmissionData.SF);
+                    if(splits.length < 8){
+                        System.out.println("The UDP format is illegal.");
+                        continue;
+                    }
                     TransmissionData tData = TransmissionData.getTransmissionData(
-                            Arrays.copyOfRange(splits,0,Constant.NUMBER_OF_DATA_PREFIX)
+                            Arrays.copyOfRange(splits,0, Constant.NUMBER_OF_DATA_PREFIX)
                     );
 
                     int newSum = 0,key = 65535 - tData.hashCode();
                     // 假如不包含这个键，则记录新的tData
                     if(!tDataMap.containsKey(key)){
                         System.out.printf(
-                                "Flow(%d,%d) from %s:%d is established",
+                                "Flow(%d,%d) from %s:%d is established\n",
                                 tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port
                         );
                         tDataMap.put(key, tData);
@@ -53,7 +57,7 @@ public class Server {
                     // 假如已经接收到的数据量超过的data_size,这发送应答信号
                     if(newSum > tData.data_size){
                         System.out.printf(
-                                "Flow(%d,%d) from %s:%d is completed",
+                                "Flow(%d,%d) from %s:%d is completed\n",
                                 tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port
                         );
                         ACK(tData);
