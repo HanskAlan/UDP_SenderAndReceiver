@@ -1,5 +1,8 @@
 package model;
 
+import java.lang.reflect.Array;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -32,8 +35,13 @@ public class TransmissionData {
     }
 
     public static TransmissionData getTransmissionData(String string){
-        TransmissionData data = new TransmissionData();
         String[] splits = string.split(SF);
+        return getTransmissionData(splits);
+    }
+
+
+    public static TransmissionData getTransmissionData(String[] splits){
+        TransmissionData data = new TransmissionData();
         for(String split : splits){
             String key = split.split("=")[0];
             String value = split.split("=")[1];
@@ -68,6 +76,8 @@ public class TransmissionData {
         return data;
     }
 
+
+
     @Override
     public String toString() {
         return "coflow_id=" + coflow_id + SF +
@@ -86,18 +96,35 @@ public class TransmissionData {
     }
 
     public static void main(String[] args) {
-        TransmissionData transmissionData = new TransmissionData(
+        TransmissionData tData = new TransmissionData(
                 1,2,
                 3,4,
                 "10.0.0.1","10.0.0.1",
                 7,8
         );
         System.out.println("原始数据生成");
-        System.out.println(transmissionData);
+        System.out.println(tData);
         System.out.println("使用Split Flag对上述字符串执行split方法");
-        String str = transmissionData.toString();
+        String str = tData.toString();
         System.out.println(Arrays.toString(str.split(SF)));
+
         System.out.println("测试getTransmissionData方法");
-        System.out.println(TransmissionData.getTransmissionData(transmissionData.toString()));
+        System.out.println(TransmissionData.getTransmissionData(tData.toString()));
+
+        byte[] buff = Arrays.copyOf((tData.toString() + "5145613sA84BJKLAJLLK").getBytes(), Constant.BUFF_SIZE);
+        str = new String(buff);
+        System.out.println(str);
+        String[] tmp =  str.split(SF);
+        StringBuilder strBuff = new StringBuilder();
+        for(int i = 0; i < Constant.NUMBER_OF_DATA_PREFIX;i++){
+            strBuff.append(tmp[i]);
+            strBuff.append(SF);
+        }
+        System.out.println(TransmissionData.getTransmissionData(strBuff.toString()));
+
+        System.out.println("测试使用split作为参数的getTransmissionData方法");
+        System.out.println(TransmissionData.getTransmissionData(
+                Arrays.copyOfRange(tmp,0,Constant.NUMBER_OF_DATA_PREFIX)
+        ));
     }
 }

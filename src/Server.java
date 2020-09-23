@@ -2,6 +2,7 @@ import model.Constant;
 import model.TransmissionData;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,11 +16,13 @@ public class Server {
     public static void main(String[] args) {
         try {
             System.out.println("Server is running and waiting for udp data");
-            DatagramSocket socket = null;
+            DatagramSocket socket;
             Map<Integer, TransmissionData> tDataMap = new HashMap<>();
             Map<Integer, Integer> receiveDataMap = new HashMap<>();
 
             socket = new DatagramSocket(Constant.SERVER_PORT);
+
+            // noinspection 服务器本就是一直持续的
             while(true){
                 DatagramPacket packet = new DatagramPacket(new byte[Constant.BUFF_SIZE], Constant.BUFF_SIZE);
                 try {
@@ -31,8 +34,11 @@ public class Server {
 
                     byte[] data = packet.getData();
 
-                    // 这里是有问题的，但是先这样做编写其他东西
-                    TransmissionData tData = TransmissionData.getTransmissionData(Arrays.toString(data));
+                    // 这里应该没有问题了
+                    String[] splits = new String(data).split(TransmissionData.SF);
+                    TransmissionData tData = TransmissionData.getTransmissionData(
+                            Arrays.copyOfRange(splits,0,Constant.NUMBER_OF_DATA_PREFIX)
+                    );
 
                     int newSum;
                     if(!tDataMap.containsKey(tData.hashCode())){
