@@ -50,6 +50,9 @@ public class Server {
                     if(timeOutMap.containsKey(key)){
                         ACK(tData,socketMap.get(key));
                         timeOutMap.put(key,System.currentTimeMillis());
+                        // 统计传输的总数据量，我想看看ACK到底及不及时
+                        newSum = receiveDataMap.get(key) + packet.getLength();
+                        receiveDataMap.put(key,newSum);
                         continue; // 不执行后面的部分
                     }
 
@@ -71,7 +74,7 @@ public class Server {
                     // 并且在timeOutMap和socketMap中添加记录
                     if(newSum > tData.data_size){
                         System.out.printf(
-                                "Flow(%d,%d) from %s:%d is completed\n",
+                                "Flow(%d,%d) from %s:%d is completed, and sending ack\n",
                                 tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port
                         );
                         socketMap.put(key, ACK(tData,null)); // 备份socket
@@ -150,7 +153,11 @@ public class Server {
         // 删除数据
         for(int key : removeKey){
             TransmissionData tData = tDataMap.remove(key);
-            receiveDataMap.remove(key);
+            System.out.printf(
+                    "Flow(%d,%d) has transfer %d B\n",
+                    tData.coflow_id,tData.flow_id,
+                    receiveDataMap.remove(key)
+            );
             timeOutMap.remove(key);
             socketMap.remove(key).close(); // 要记得关闭socket
             System.out.printf(

@@ -8,29 +8,26 @@ import java.util.Map;
  * @author yy
  */
 public class Parameters {
-
     private static final String DEST_IP = "dest_ip";
-
     private static final String SRC_IP = "src_ip";
-
     private static final String FLOW_ID = "flow_id";
-
     private static final String FLOW_COUNT = "flow_count";
-
     private static final String DATA_SIZE = "data_size";
-
     private static final String CO_FLOW_ID = "co_flow_id";
-
+    private static final String RATE = "rate";
 
     /**
      * 目的主机IP
      */
     private String destIp;
 
+    /**
+     * 源主机IP
+     */
     private String srcIp;
 
     /**
-     * 子流Id，使用报文的目的端口进行表示
+     * 子流Id
      */
     private int flowId = 18888;
 
@@ -48,6 +45,11 @@ public class Parameters {
      * 使用报文的源协流Id
      */
     private int coFlowId = 8888;
+
+    /**
+     * 传输速率（内部以MB/s表示，外部以B/s表示）默认1M/s
+     */
+    private long rate = 1;
 
     public String getDestIp() {
         return destIp;
@@ -97,6 +99,13 @@ public class Parameters {
         this.coFlowId = coFlowId;
     }
 
+    public long getRate() {
+        return rate;
+    }
+
+    public void setRate(long rate) {
+        this.rate = rate;
+    }
 
     public static Parameters getParameters(String[] args) {
         if (null == args || args.length == 0) {
@@ -128,6 +137,9 @@ public class Parameters {
         }
         if (null != params.get(CO_FLOW_ID)) {
             parameters.setCoFlowId(Integer.parseInt(params.get(CO_FLOW_ID)));
+        }
+        if (null != params.get(RATE)){
+            parameters.setRate(Long.parseLong(params.get(RATE)));
         }
         return parameters;
     }

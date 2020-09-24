@@ -16,6 +16,7 @@ public class Constant {
     public static int SERVER_PORT = 5001;
 //    public static int ACK_NUMBER = 10;
     public static Long TIME_OUT_LIMIT = 5 * 1000L; // 单位ms
+    public static int CLIENT_SLEEP_TIME = 50; // 单位ms
     public static int hash(int coflowID,int flowId){
         return coflowID * 60 + flowId;
     }
