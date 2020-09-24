@@ -46,6 +46,13 @@ public class Server {
 
 
                     int newSum = 0,key = 65535 - tData.hashCode();
+
+                    // 0. 周期性删除过时记录
+                    if(System.currentTimeMillis() - lastCleanTime > Constant.TIME_OUT_LIMIT){
+                        cleanMap(tDataMap,receiveDataMap,timeOutMap,socketMap);
+                        lastCleanTime = System.currentTimeMillis();
+                    }
+
                     // 1. 首先判断是否在在TimeOutMap中，假如在TimeOutMap则立即应答ACK,并且更新TimeOutMap时间
                     if(timeOutMap.containsKey(key)){
                         ACK(tData,socketMap.get(key));
@@ -81,11 +88,7 @@ public class Server {
                         timeOutMap.put(key,System.currentTimeMillis());
                     }
 
-                    // 周期性删除过时记录
-                    if(System.currentTimeMillis() - lastCleanTime > Constant.TIME_OUT_LIMIT){
-                        cleanMap(tDataMap,receiveDataMap,timeOutMap,socketMap);
-                        lastCleanTime = System.currentTimeMillis();
-                    }
+
 
                 } catch (IOException e) {
                     // 打印异常消息
