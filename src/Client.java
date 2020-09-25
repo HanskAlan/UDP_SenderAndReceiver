@@ -25,14 +25,14 @@ public class Client {
             Parameters parameters = Parameters.getParameters(args);
             checkParam(parameters);
 
-            String dstip = parameters.getDestIp();
-            InetAddress destIp = InetAddress.getByName(dstip);
-            String srcip=parameters.getSrcIp();
-            InetAddress srcIp=InetAddress.getByName(srcip);
+            String dst_ip = parameters.getDestIp();
+            InetAddress destIp = InetAddress.getByName(dst_ip);
+            String src_ip=parameters.getSrcIp();
+            InetAddress srcIp=InetAddress.getByName(src_ip);
             int flowId = parameters.getFlowId();
             int flowCount = parameters.getFlowCount();
             int coFlowId = parameters.getCoFlowId();
-            dataSize = new AtomicInteger(parameters.getDataSize() * 1024 * 1024);
+            dataSize = new AtomicInteger((int) Math.ceil(parameters.getDataSize() * 1024 * 1024 * parameters.getPercent()));
 
             CountDownLatch countDownLatch = new CountDownLatch(2);
             // 先启动listen，再启动send
@@ -72,7 +72,7 @@ public class Client {
 
                 ByteBuffer buf = ByteBuffer.allocate(256); // 这个地方我不确定会不会埋雷，发包的大小应该是以这个256为准的吧
                 buf.clear();
-                SocketAddress s = channel.receive(buf); // 没有接受到的时候会挂起
+                channel.receive(buf); // 没有接受到的时候会挂起
                 byte[] b = buf.array();
                 System.out.println("Receive ack packet : " + new String(b));
                 channel.close();
@@ -116,14 +116,14 @@ public class Client {
                 int send_port=65535 - coFlowId * 100 - flowId;
                 DatagramSocket ds = new DatagramSocket(send_port); // 指定发送端口
 //                String srcIP=ds.getLocalAddress().toString();
-                String dstIPtmp=destIp.toString();
-                String dstIP=dstIPtmp.substring(1,dstIPtmp.length());//这里是为了去掉ip里面奇怪的斜杠
-                String srcIPtmp=srcIp.toString();
-                String srcIP=srcIPtmp.substring(1,srcIPtmp.length());
+                String dstIP_tmp=destIp.toString();
+                String dstIP=dstIP_tmp.substring(1);//这里是为了去掉ip里面奇怪的斜杠
+                String srcIP_tmp=srcIp.toString();
+                String srcIP=srcIP_tmp.substring(1);
 
 
                 int destPort = Constant.SERVER_PORT;
-                long startTime = System.currentTimeMillis(),nowTime = startTime;
+                long startTime = System.currentTimeMillis(),nowTime;
                 while (!isReceived) {
 //                    byte[] buffer = new byte[1024];//这三行代码是为了监听服务端返回的终结数据包
 //                    DatagramPacket ending_packet = new DatagramPacket(buffer, buffer.length);
@@ -148,7 +148,7 @@ public class Client {
                     // 控制传输速度
                     nowTime = System.currentTimeMillis();
                     if(((long) i * buff.length) / (nowTime - startTime) > rate * 1000L){
-                        // intelij的提示忙等待，不清楚是怎么回事
+                        // intellij的提示忙等待，不清楚是怎么回事
                         System.out.printf("time : %d,packet : %d\n",System.currentTimeMillis() - startTime,i);
                         Thread.sleep(Constant.CLIENT_SLEEP_TIME);
                     }

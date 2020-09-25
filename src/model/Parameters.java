@@ -15,6 +15,7 @@ public class Parameters {
     private static final String DATA_SIZE = "data_size";
     private static final String CO_FLOW_ID = "co_flow_id";
     private static final String RATE = "rate";
+    private static final String PERCENT = "percent";
 
     /**
      * 目的主机IP
@@ -50,6 +51,16 @@ public class Parameters {
      * 传输速率（内部以MB/s表示，外部以B/s表示）默认1M/s
      */
     private long rate = 1;
+
+    public double getPercent() {
+        return percent;
+    }
+
+    public void setPercent(double percent) {
+        this.percent = percent;
+    }
+
+    private double percent = 1;
 
     public String getDestIp() {
         return destIp;
@@ -140,6 +151,9 @@ public class Parameters {
         }
         if (null != params.get(RATE)){
             parameters.setRate(Long.parseLong(params.get(RATE)));
+        }
+        if (null != params.get(PERCENT)){
+            parameters.setPercent(Double.parseDouble(params.get(PERCENT)));
         }
         return parameters;
     }

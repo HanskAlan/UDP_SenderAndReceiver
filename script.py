@@ -8,11 +8,12 @@ from time import sleep
 # TAIL = ''
 TAIL = ' rate=2 > /dev/null &'
 
-## 不同数据之间的运行时间
-INTARVAL_TIME = 10
+## 不同数据文件之间的等待时间间隔
+INTARVAL_TIME = 30
 
 ## 文件列表
 FILE_NAME = [
+	"test.txt",
 	"test.txt",
 	# "default.txt",
 ]
@@ -54,7 +55,7 @@ def createClient(file_path,ipList):
 			# print(line_list)
 			completeTime = line_list[0]
 			if line_list[1] in ipList:
-				res = math.ceil(float(line_list[6]))
+				res = int(math.ceil(float(line_list[6])))
 				nowTime = int(line_list[0])
 				print("Sleep to " + line_list[0] + " ms")
 				sleep((nowTime - lastTime) / 1000.0)
@@ -84,7 +85,7 @@ if __name__ == "__main__":
 	flag = False # 是否是第二轮
 	for i in FILE_NAME:
 		if(flag):
-			print("Waiting for the next DataFile")
+			print("Waiting for the next DataFile(%d s)"%INTARVAL_TIME)
 			sleep(INTARVAL_TIME) # 不同的数据间隔一定的时间运行
 		else:
 			flag = True
