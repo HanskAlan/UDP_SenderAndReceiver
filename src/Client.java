@@ -40,7 +40,6 @@ public class Client {
             new ListenWorker(countDownLatch,coFlowId,flowId).start();
             new SendWorker(countDownLatch, destIp,srcIp, coFlowId, flowId, flowCount, parameters.getRate()).start();
             countDownLatch.await();
-//            System.out.printf("Close the client(%d,%d)\n",coFlowId,flowId);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Something wrong happened");
@@ -91,14 +90,11 @@ public class Client {
         private final int flowId;
         private final InetAddress destIp;
         private final InetAddress srcIp;//这里是后来加的，和上面的不对称，所以显得很丑
-//        private final DatagramSocket ds;
         private final int flowCount;
         private final long rate;
-        //        private String data;
         private final CountDownLatch countDownLatch;
 
         SendWorker(CountDownLatch countDownLatch, InetAddress destIp, InetAddress srcIp, int coFlowId, int flowId, int flowCount, long rate) {
-//            this.ds = ds;
             this.destIp = destIp;
             this.srcIp = srcIp;
             this.coFlowId = coFlowId;
@@ -112,9 +108,10 @@ public class Client {
         public void run() {
             int i = 0;
             isReceived=false;
+            DatagramSocket ds = null;
             try {
                 int send_port=65535 - coFlowId * 100 - flowId;
-                DatagramSocket ds = new DatagramSocket(send_port); // 指定发送端口
+                ds = new DatagramSocket(send_port); // 指定发送端口
 //                String srcIP=ds.getLocalAddress().toString();
                 String dstIP_tmp=destIp.toString();
                 String dstIP=dstIP_tmp.substring(1);//这里是为了去掉ip里面奇怪的斜杠
@@ -125,28 +122,15 @@ public class Client {
                 int destPort = Constant.SERVER_PORT;
                 long startTime = System.currentTimeMillis(),nowTime;
                 while (!isReceived) {
-//                    byte[] buffer = new byte[1024];//这三行代码是为了监听服务端返回的终结数据包
-//                    DatagramPacket ending_packet = new DatagramPacket(buffer, buffer.length);
-//                    ds.receive(ending_packet);
-//                    String data = destIp.toString()+DATA_PREFIX_CO_FLOW_ID + coFlowId + ";" +
-//                            DATA_PREFIX_FLOW_COUNT + flowCount + ";" +
-//                            DATA_PREFIX_DATA_SIZE + buffSize;
                     String data = new TransmissionData(coFlowId,flowCount,flowId,dataSize.intValue(),srcIP,dstIP,send_port,destPort).toString();//里面调用了很多丑的不行的方法。。。
 
                     byte[] buff = Arrays.copyOf(data.getBytes(), Constant.BUFF_SIZE);
                     DatagramPacket packet = new DatagramPacket(buff, 0, buff.length, destIp, 5001);
                     ds.send(packet);
                     i++;
-//                    if(i++ % 1 == 0){
-//                        System.out.println(i);
-//                    }
 
-//                    if(i>1000){  //这里测试一下我的停止发包的函数
-//                        packet = new DatagramPacket(buff, 0, buff.length, destIp, destPort);
-//                        ds.send(packet);
-//                    }
                     // 控制传输速度
-                    nowTime = System.currentTimeMillis();
+                    nowTime = System.currentTimeMillis() + 1;
                     if(((long) i * buff.length) / (nowTime - startTime) > rate * 1000L){
                         // intellij的提示忙等待，不清楚是怎么回事
                         System.out.printf("time : %d,packet : %d\n",System.currentTimeMillis() - startTime,i);
@@ -157,6 +141,7 @@ public class Client {
                 e.printStackTrace();
                 System.out.println("exception happened during sending, coFlowId = " + coFlowId + " flowId = " + flowId);
             } finally {
+                if(ds != null) ds.close();
                 System.out.println("coflow" + coFlowId + " flow" + flowId + " complete sending");
                 System.out.println("Total packet : " + i + ", and total transmission : " + i * Constant.BUFF_SIZE);
                 countDownLatch.countDown();
