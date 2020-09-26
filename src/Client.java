@@ -110,7 +110,7 @@ public class Client {
             isReceived=false;
             DatagramSocket ds = null;
             try {
-                int send_port=65535 - coFlowId * 100 - flowId;
+                int send_port = 65535 - Constant.hash(coFlowId,flowId);
                 ds = new DatagramSocket(send_port); // 指定发送端口
 //                String srcIP=ds.getLocalAddress().toString();
                 String dstIP_tmp=destIp.toString();
