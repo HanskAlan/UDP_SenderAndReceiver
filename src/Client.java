@@ -131,7 +131,7 @@ public class Client {
 
                     // 控制传输速度
                     nowTime = System.currentTimeMillis() + 1;
-                    if(((long) i * buff.length) / (nowTime - startTime) > rate * 1000L){
+                    if(1.0 * (i * buff.length) / (nowTime - startTime) > rate * 1000L){
                         // intellij的提示忙等待，不清楚是怎么回事
                         System.out.printf("time : %d,packet : %d\n",System.currentTimeMillis() - startTime,i);
                         Thread.sleep(Constant.CLIENT_SLEEP_TIME);
