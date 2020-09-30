@@ -91,10 +91,10 @@ public class Client {
         private final InetAddress destIp;
         private final InetAddress srcIp;//这里是后来加的，和上面的不对称，所以显得很丑
         private final int flowCount;
-        private final long rate;
+        private final double rate;
         private final CountDownLatch countDownLatch;
 
-        SendWorker(CountDownLatch countDownLatch, InetAddress destIp, InetAddress srcIp, int coFlowId, int flowId, int flowCount, long rate) {
+        SendWorker(CountDownLatch countDownLatch, InetAddress destIp, InetAddress srcIp, int coFlowId, int flowId, int flowCount, double rate) {
             this.destIp = destIp;
             this.srcIp = srcIp;
             this.coFlowId = coFlowId;

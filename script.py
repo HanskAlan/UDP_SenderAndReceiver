@@ -6,15 +6,19 @@ from time import sleep
 
 ## 命令的尾部添加什么
 # TAIL = ''
-TAIL = ' rate=2 > /dev/null &'
+TAIL = ' rate=1 percent=0.3 > /dev/null &'
 
 ## 不同数据文件之间的等待时间间隔
-INTARVAL_TIME = 30
+INTARVAL_TIME = 300
 
 ## 文件列表
 FILE_NAME = [
-	"test.txt",
-	"test.txt",
+	"highInterval.txt",
+	"lowInterval.txt",
+	"highLength.txt",
+	"lowLength.txt",
+	"highWidth.txt",
+	"lowWidth.txt",
 	# "default.txt",
 ]
 

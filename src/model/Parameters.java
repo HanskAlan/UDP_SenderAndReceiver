@@ -50,7 +50,7 @@ public class Parameters {
     /**
      * 传输速率（内部以MB/s表示，外部以B/s表示）默认1M/s
      */
-    private long rate = 1;
+    private double rate = 1;
 
     public double getPercent() {
         return percent;
@@ -110,11 +110,11 @@ public class Parameters {
         this.coFlowId = coFlowId;
     }
 
-    public long getRate() {
+    public double getRate() {
         return rate;
     }
 
-    public void setRate(long rate) {
+    public void setRate(double rate) {
         this.rate = rate;
     }
 
@@ -150,7 +150,7 @@ public class Parameters {
             parameters.setCoFlowId(Integer.parseInt(params.get(CO_FLOW_ID)));
         }
         if (null != params.get(RATE)){
-            parameters.setRate(Long.parseLong(params.get(RATE)));
+            parameters.setRate(Double.parseDouble(params.get(RATE)));
         }
         if (null != params.get(PERCENT)){
             parameters.setPercent(Double.parseDouble(params.get(PERCENT)));
