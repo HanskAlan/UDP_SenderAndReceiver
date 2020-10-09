@@ -11,10 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-/**
- * send packets
- * @author yy,hsk,aberror
- */
+
 
 public class Client {
     private static volatile AtomicInteger dataSize;
@@ -134,6 +131,7 @@ public class Client {
                     if(1.0 * (i * buff.length) / (nowTime - startTime) > rate * 1000L){
                         // intellij的提示忙等待，不清楚是怎么回事
                         System.out.printf("time : %d,packet : %d\n",System.currentTimeMillis() - startTime,i);
+                        //noinspection BusyWait
                         Thread.sleep(Constant.CLIENT_SLEEP_TIME);
                     }
                 }

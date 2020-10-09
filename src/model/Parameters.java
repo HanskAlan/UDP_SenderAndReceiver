@@ -4,9 +4,7 @@ package model;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author yy
- */
+
 public class Parameters {
     private static final String DEST_IP = "dest_ip";
     private static final String SRC_IP = "src_ip";
