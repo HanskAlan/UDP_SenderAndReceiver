@@ -10,14 +10,16 @@ import java.util.Map;
 
 
 public class Server {
+    static Map<Integer, TransmissionData> tDataMap = new HashMap<>();
+    static Map<Integer, Integer> receiveDataMap = new HashMap<>();
+    static Map<Integer, Long> lastPrintMap = new HashMap<>(); // 最后一次打印
+    static Map<Integer, Long> timeOutMap = new HashMap<>(); // 在这个Map中的数据将在10秒后删除
+    static Map<Integer, DatagramSocket> socketMap = new HashMap<>(); // 在这个Map中的数据将在10秒后删除
+
 
     public static void main(String[] args) {
         try {
             DatagramSocket socket;
-            Map<Integer, TransmissionData> tDataMap = new HashMap<>();
-            Map<Integer, Integer> receiveDataMap = new HashMap<>();
-            Map<Integer, Long> timeOutMap = new HashMap<>(); // 在这个Map中的数据将在10秒后删除
-            Map<Integer, DatagramSocket> socketMap = new HashMap<>(); // 在这个Map中的数据将在10秒后删除
 
             System.out.println("Server is running and listen to " + Constant.SERVER_PORT);
             socket = new DatagramSocket(Constant.SERVER_PORT);
@@ -47,7 +49,7 @@ public class Server {
 
                     // 0. 周期性删除过时记录
                     if(System.currentTimeMillis() - lastCleanTime > Constant.TIME_OUT_LIMIT){
-                        cleanMap(tDataMap,receiveDataMap,timeOutMap,socketMap);
+                        cleanMap();
                         lastCleanTime = System.currentTimeMillis();
                     }
 
@@ -64,14 +66,28 @@ public class Server {
                     // 2. 然后判断现在的tDataMap是否包含这个键。假如不包含这个键，则添加新的记录到tDataMap和和receiveDataMap中
                     if(!tDataMap.containsKey(key)){
                         System.out.printf(
-                                "Flow(%d,%d) from %s:%d is established\n",
-                                tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port
+                                "Flow(%d,%d) from %s:%d is established %d\n",
+                                tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port,System.currentTimeMillis()
                         );
                         tDataMap.put(key, tData);
+                        lastPrintMap.put(key,System.currentTimeMillis());
                         newSum = packet.getLength();
                     } else {
                         // 否则累加已经接受到的数据量
                         newSum = receiveDataMap.get(key) + packet.getLength();
+                        long time = System.currentTimeMillis();
+
+                        // 每间隔一段时间进行打印
+                        if(time > lastPrintMap.get(key) + Constant.PRINT_INTERVAL){
+                            lastPrintMap.put(key,System.currentTimeMillis());
+                            System.out.printf(
+                                    "Flow(%d,%d) %d %d %f %d\n",
+                                    tData.coflow_id,tData.flow_id,
+                                    newSum,tData.data_size,
+                                    1.0 * newSum / tData.data_size,
+                                    System.currentTimeMillis()
+                            );
+                        }
                     }
                     receiveDataMap.put(key,newSum);
 
@@ -79,8 +95,8 @@ public class Server {
                     // 并且在timeOutMap和socketMap中添加记录
                     if(newSum > tData.data_size){
                         System.out.printf(
-                                "Flow(%d,%d) from %s:%d is completed, and sending ack\n",
-                                tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port
+                                "Flow(%d,%d) from %s:%d is completed, and sending ack %d\n",
+                                tData.coflow_id,tData.flow_id,tData.src_ip,tData.src_port,System.currentTimeMillis()
                         );
                         socketMap.put(key, ACK(tData,null)); // 备份socket
                         timeOutMap.put(key,System.currentTimeMillis());
@@ -121,9 +137,9 @@ public class Server {
         byte[] buff = Arrays.copyOf(tData.toString().getBytes(), Constant.BUFF_SIZE);
         // Client的接受端口是10000 + hash
         DatagramPacket packet = new DatagramPacket(
-            buff, 0, buff.length,
-            InetAddress.getByName(tData.src_ip),
-            10000 + tData.hashCode()
+                buff, 0, buff.length,
+                InetAddress.getByName(tData.src_ip),
+                10000 + tData.hashCode()
         );
         assert socket != null;
         socket.send(packet);
@@ -133,12 +149,7 @@ public class Server {
     /**
      * 清除已经完成的流的记录
      */
-    private static void cleanMap(
-            Map<Integer, TransmissionData> tDataMap,
-            Map<Integer, Integer> receiveDataMap ,
-            Map<Integer, Long> timeOutMap,
-            Map<Integer, DatagramSocket> socketMap
-    ){
+    private static void cleanMap(){
         if(timeOutMap.size() == 0)return;
 
         // 先获取需要删除的Key
@@ -165,6 +176,7 @@ public class Server {
                     "Flow(%d,%d)'record is removed\n",
                     tData.coflow_id,tData.flow_id
             );
+            lastPrintMap.remove(key);
         }
     }
 }

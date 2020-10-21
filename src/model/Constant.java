@@ -12,11 +12,10 @@ public class Constant {
 
     public static int NUMBER_OF_DATA_PREFIX = 8;
     public static int BUFF_SIZE = 1024;
-//    public static int CLIENT_PORT = 5002;
     public static int SERVER_PORT = 5001;
-//    public static int ACK_NUMBER = 10;
     public static Long TIME_OUT_LIMIT = 5 * 1000L; // 单位ms
     public static int CLIENT_SLEEP_TIME = 50; // 单位ms
+    public static int PRINT_INTERVAL = 200; // 打印间隔时间，单位ms
     public static int hash(int coflowID,int flowId){
         return coflowID * 60 + flowId;
     }
